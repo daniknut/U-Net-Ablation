@@ -13,7 +13,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from unet_ablation.data import discover_split_samples, write_metadata_file
+from unet_ablation.data.metadata import discover_split_samples, write_metadata_file
 
 
 def parse_args() -> argparse.Namespace:
