@@ -1,0 +1,6 @@
+base_config: ../base.yaml
+
+experiment_name: no_skip
+
+model:
+  skip_mask: [false, false, false, false]

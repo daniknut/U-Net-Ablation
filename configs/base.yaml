@@ -1,0 +1,43 @@
+experiment_name: baseline
+
+data:
+  root: data/ade20k
+  metadata_dir: data/ade20k/metadata
+  train_metadata: train.jsonl
+  val_metadata: val.jsonl
+  train_images_subdir: images/training
+  train_masks_subdir: annotations/training
+  val_images_subdir: images/validation
+  val_masks_subdir: annotations/validation
+  image_size: [256, 256]
+  batch_size: 4
+  num_workers: 0
+  num_classes: 151
+  ignore_index: 255
+  label_offset: 0
+  normalize_mean: [0.485, 0.456, 0.406]
+  normalize_std: [0.229, 0.224, 0.225]
+
+model:
+  in_channels: 3
+  num_classes: 151
+  encoder_channels: [64, 128, 256, 512]
+  bottleneck_channels: 1024
+  skip_mask: [true, true, true, true]
+
+train:
+  device: auto
+  epochs: 20
+  learning_rate: 0.0003
+  weight_decay: 0.0001
+  seed: 0
+  output_dir: artifacts/runs
+  checkpoint_dir: artifacts/checkpoints
+  log_every: 10
+  early_stopping_patience: 5
+  early_stopping_min_delta: 0.0
+  gradient_clip_norm: 1.0
+
+evaluation:
+  output_dir: artifacts/eval
+  num_visualizations: 4

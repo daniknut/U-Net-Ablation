@@ -1,0 +1,6 @@
+base_config: ../base.yaml
+
+experiment_name: highres_skip_only
+
+model:
+  skip_mask: [true, true, false, false]

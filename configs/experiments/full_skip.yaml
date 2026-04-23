@@ -1,0 +1,6 @@
+base_config: ../base.yaml
+
+experiment_name: full_skip
+
+model:
+  skip_mask: [true, true, true, true]
