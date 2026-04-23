@@ -199,7 +199,3 @@ Long, J., Shelhamer, E., & Darrell, T. (2015). Fully convolutional networks for 
 Ronneberger, O., Fischer, P., & Brox, T. (2015). U-Net: Convolutional networks for biomedical image segmentation. In N. Navab, J. Hornegger, W. M. Wells, & A. F. Frangi (Eds.), *Medical Image Computing and Computer-Assisted Intervention - MICCAI 2015* (pp. 234-241). Springer.
 
 Zhou, B., Zhao, H., Puig, X., Fidler, S., Barriuso, A., & Torralba, A. (2017). Scene parsing through ADE20K dataset. In *Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition* (pp. 5122-5130).
-
-## Use of ChatGPT
-
-I used ChatGPT to help generate citations in APA format and to create an initial outline for organizing my introduction. I reviewed and edited the content myself and used it only as a support tool for structure and formatting.
