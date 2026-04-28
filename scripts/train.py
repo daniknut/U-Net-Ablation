@@ -13,8 +13,8 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from unet_ablation.engine import train_experiment
-from unet_ablation.utils import load_experiment_config
+from unet_ablation.engine.trainer import train_experiment
+from unet_ablation.utils.config import load_experiment_config
 
 
 def parse_args() -> argparse.Namespace:
@@ -43,6 +43,8 @@ def main() -> None:
         "seed": result.seed,
         "run_dir": str(result.run_dir),
         "best_checkpoint": str(result.best_checkpoint),
+        "summary_path": str(result.summary_path),
+        "epochs_completed": result.epochs_completed,
         "best_metrics": result.best_metrics,
     }
     print(json.dumps(payload, indent=2))

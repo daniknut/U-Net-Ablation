@@ -39,6 +39,18 @@ class DataConfig:
     normalize_mean: tuple[float, float, float] = (0.485, 0.456, 0.406)
     normalize_std: tuple[float, float, float] = (0.229, 0.224, 0.225)
 
+    def __post_init__(self) -> None:
+        if len(self.image_size) != 2 or any(int(size) <= 0 for size in self.image_size):
+            raise ValueError("data.image_size must contain two positive integers")
+        if self.batch_size <= 0:
+            raise ValueError("data.batch_size must be positive")
+        if self.num_workers < 0:
+            raise ValueError("data.num_workers cannot be negative")
+        if self.num_classes <= 0:
+            raise ValueError("data.num_classes must be positive")
+        if len(self.normalize_mean) != 3 or len(self.normalize_std) != 3:
+            raise ValueError("data.normalize_mean and data.normalize_std must have three values")
+
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> "DataConfig":
         data = dict(payload)
@@ -50,17 +62,36 @@ class DataConfig:
 
 @dataclass(slots=True)
 class ModelConfig:
+    architecture: str = "unet"
+    variant: str = "baseline"
     in_channels: int = 3
     num_classes: int = 151
     encoder_channels: tuple[int, int, int, int] = (64, 128, 256, 512)
     bottleneck_channels: int = 1024
-    skip_mask: tuple[bool, bool, bool, bool] = (True, True, True, True)
+    skip_mask: tuple[bool, ...] | None = None
+
+    def __post_init__(self) -> None:
+        if self.in_channels <= 0:
+            raise ValueError("model.in_channels must be positive")
+        if self.num_classes <= 0:
+            raise ValueError("model.num_classes must be positive")
+        if len(self.encoder_channels) == 0:
+            raise ValueError("model.encoder_channels cannot be empty")
+        if any(int(channel) <= 0 for channel in self.encoder_channels):
+            raise ValueError("model.encoder_channels must contain positive integers")
+        if self.bottleneck_channels <= 0:
+            raise ValueError("model.bottleneck_channels must be positive")
+        if self.skip_mask is not None and len(self.skip_mask) != len(self.encoder_channels):
+            raise ValueError("model.skip_mask length must match model.encoder_channels")
 
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> "ModelConfig":
         data = dict(payload)
         data["encoder_channels"] = tuple(data.get("encoder_channels", (64, 128, 256, 512)))
-        data["skip_mask"] = tuple(bool(flag) for flag in data.get("skip_mask", (True, True, True, True)))
+        raw_skip_mask = data.get("skip_mask")
+        data["skip_mask"] = (
+            tuple(bool(flag) for flag in raw_skip_mask) if raw_skip_mask is not None else None
+        )
         return cls(**data)
 
 
@@ -78,6 +109,20 @@ class TrainConfig:
     early_stopping_min_delta: float = 0.0
     gradient_clip_norm: float | None = 1.0
 
+    def __post_init__(self) -> None:
+        if self.epochs <= 0:
+            raise ValueError("train.epochs must be positive")
+        if self.learning_rate <= 0:
+            raise ValueError("train.learning_rate must be positive")
+        if self.weight_decay < 0:
+            raise ValueError("train.weight_decay cannot be negative")
+        if self.log_every <= 0:
+            raise ValueError("train.log_every must be positive")
+        if self.early_stopping_patience <= 0:
+            raise ValueError("train.early_stopping_patience must be positive")
+        if self.gradient_clip_norm is not None and self.gradient_clip_norm <= 0:
+            raise ValueError("train.gradient_clip_norm must be positive when provided")
+
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> "TrainConfig":
         return cls(**payload)
@@ -87,6 +132,10 @@ class TrainConfig:
 class EvaluationConfig:
     output_dir: str = "artifacts/eval"
     num_visualizations: int = 4
+
+    def __post_init__(self) -> None:
+        if self.num_visualizations <= 0:
+            raise ValueError("evaluation.num_visualizations must be positive")
 
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> "EvaluationConfig":

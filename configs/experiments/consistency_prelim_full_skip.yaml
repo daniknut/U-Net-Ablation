@@ -1,0 +1,38 @@
+experiment_name: consistency_prelim_full_skip
+
+data:
+  root: data/ADE20K_2017_05_30_consistency
+  metadata_dir: data/ADE20K_2017_05_30_consistency/metadata
+  train_metadata: train.jsonl
+  val_metadata: val.jsonl
+  image_size: [128, 128]
+  batch_size: 2
+  num_workers: 0
+  num_classes: 3120
+  ignore_index: 255
+  label_offset: 0
+
+model:
+  architecture: unet
+  variant: full_skip
+  in_channels: 3
+  num_classes: 3120
+  encoder_channels: [16, 32, 64, 128]
+  bottleneck_channels: 256
+
+train:
+  device: cpu
+  epochs: 1
+  learning_rate: 0.0003
+  weight_decay: 0.0001
+  seed: 0
+  output_dir: artifacts/runs
+  checkpoint_dir: artifacts/checkpoints
+  log_every: 10
+  early_stopping_patience: 1
+  early_stopping_min_delta: 0.0
+  gradient_clip_norm: 1.0
+
+evaluation:
+  output_dir: artifacts/eval
+  num_visualizations: 4

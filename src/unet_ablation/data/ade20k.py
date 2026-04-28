@@ -11,7 +11,7 @@ from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 
 from unet_ablation.data.metadata import SegmentationSample, load_samples
-from unet_ablation.utils import DataConfig
+from unet_ablation.utils.config import DataConfig
 
 
 class ADE20KDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
@@ -38,6 +38,19 @@ class ADE20KDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
     def __len__(self) -> int:
         return len(self.samples)
 
+    @staticmethod
+    def _decode_mask(mask: Image.Image) -> np.ndarray:
+        mask_array = np.asarray(mask)
+        if mask_array.ndim == 2:
+            return mask_array.astype(np.int64)
+
+        if mask_array.ndim == 3 and mask_array.shape[2] >= 2:
+            red = mask_array[:, :, 0].astype(np.int64)
+            green = mask_array[:, :, 1].astype(np.int64)
+            return (red // 10) * 256 + green
+
+        raise ValueError(f"Unsupported mask shape: {mask_array.shape}")
+
     def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor]:
         sample = self.samples[index]
         image = Image.open(sample.image).convert("RGB")
@@ -53,7 +66,7 @@ class ADE20KDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
             mask = mask.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
         image_array = np.asarray(image, dtype=np.float32) / 255.0
-        mask_array = np.asarray(mask, dtype=np.int64)
+        mask_array = self._decode_mask(mask)
 
         if self.label_offset:
             valid_mask = mask_array != self.ignore_index

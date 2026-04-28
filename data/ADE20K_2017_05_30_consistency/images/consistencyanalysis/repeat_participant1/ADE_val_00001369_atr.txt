@@ -1,0 +1,7 @@
+001 # 0 # 0 # wall # wall # ""
+002 # 0 # 0 # stairway, staircase # staircase # ""
+003 # 0 # 0 # railing, rail # railing # ""
+004 # 0 # 0 # pool # pool # ""
+005 # 0 # 0 # person, individual, someone, somebody, mortal, soul # person # ""
+006 # 0 # 0 # waterfall, falls # waterfall # ""
+007 # 0 # 0 # plant, flora, plant life # plants # ""

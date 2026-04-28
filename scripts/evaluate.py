@@ -13,8 +13,9 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from unet_ablation.engine import evaluate_checkpoint, save_prediction_samples
-from unet_ablation.utils import load_experiment_config, save_json
+from unet_ablation.engine.trainer import evaluate_checkpoint, save_prediction_samples
+from unet_ablation.utils.config import load_experiment_config
+from unet_ablation.utils.io import save_json
 
 
 def parse_args() -> argparse.Namespace:

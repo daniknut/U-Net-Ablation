@@ -9,17 +9,12 @@ from typing import Any
 import torch
 from torch import nn
 
-from unet_ablation.data import build_dataloaders
-from unet_ablation.metrics import confusion_matrix, mean_iou, pixel_accuracy
-from unet_ablation.models import build_unet
-from unet_ablation.utils import (
-    ExperimentConfig,
-    append_jsonl,
-    ensure_dir,
-    resolve_device,
-    save_json,
-    set_seed,
-)
+from unet_ablation.data.ade20k import build_dataloaders
+from unet_ablation.metrics.segmentation import confusion_matrix, mean_iou, pixel_accuracy
+from unet_ablation.models.unet import build_model
+from unet_ablation.utils.config import ExperimentConfig
+from unet_ablation.utils.io import append_jsonl, save_json
+from unet_ablation.utils.runtime import ensure_dir, resolve_device, set_seed
 from unet_ablation.utils.visualization import save_colorized_mask, save_image_tensor
 
 
@@ -34,7 +29,9 @@ class TrainResult:
     best_checkpoint: Path
     last_checkpoint: Path
     history_path: Path
+    summary_path: Path
     best_metrics: dict[str, float]
+    epochs_completed: int
 
 
 def _run_directory(root: str | Path, experiment_name: str, seed: int) -> Path:
@@ -147,12 +144,13 @@ def train_experiment(config: ExperimentConfig) -> TrainResult:
         config.train.checkpoint_dir, config.experiment_name, config.train.seed
     )
     history_path = run_dir / "history.jsonl"
+    summary_path = run_dir / "summary.json"
     if history_path.exists():
         history_path.unlink()
     save_json(run_dir / "resolved_config.json", config.to_dict())
 
     train_loader, val_loader = build_dataloaders(config.data)
-    model = build_unet(config.model).to(device)
+    model = build_model(config.model).to(device)
     criterion = nn.CrossEntropyLoss(ignore_index=config.data.ignore_index)
     optimizer = torch.optim.AdamW(
         model.parameters(),
@@ -165,8 +163,10 @@ def train_experiment(config: ExperimentConfig) -> TrainResult:
     best_checkpoint = checkpoint_dir / "best.pt"
     last_checkpoint = checkpoint_dir / "last.pt"
     epochs_without_improvement = 0
+    epochs_completed = 0
 
     for epoch in range(1, config.train.epochs + 1):
+        epochs_completed = epoch
         train_metrics = train_one_epoch(
             model=model,
             dataloader=train_loader,
@@ -207,6 +207,19 @@ def train_experiment(config: ExperimentConfig) -> TrainResult:
     if not best_checkpoint.exists():
         raise RuntimeError("Training completed without producing a best checkpoint")
 
+    save_json(
+        summary_path,
+        {
+            "experiment_name": config.experiment_name,
+            "seed": config.train.seed,
+            "epochs_completed": epochs_completed,
+            "best_checkpoint": str(best_checkpoint),
+            "last_checkpoint": str(last_checkpoint),
+            "history_path": str(history_path),
+            "best_metrics": best_metrics,
+        },
+    )
+
     return TrainResult(
         experiment_name=config.experiment_name,
         seed=config.train.seed,
@@ -215,7 +228,9 @@ def train_experiment(config: ExperimentConfig) -> TrainResult:
         best_checkpoint=best_checkpoint,
         last_checkpoint=last_checkpoint,
         history_path=history_path,
+        summary_path=summary_path,
         best_metrics=best_metrics,
+        epochs_completed=epochs_completed,
     )
 
 
@@ -224,7 +239,7 @@ def evaluate_checkpoint(config: ExperimentConfig, checkpoint_path: str | Path) -
 
     device = resolve_device(config.train.device)
     _, val_loader = build_dataloaders(config.data)
-    model = build_unet(config.model).to(device)
+    model = build_model(config.model).to(device)
     criterion = nn.CrossEntropyLoss(ignore_index=config.data.ignore_index)
     _load_checkpoint(Path(checkpoint_path), model, device)
     return evaluate_model(
@@ -247,7 +262,7 @@ def save_prediction_samples(
     device = resolve_device(config.train.device)
     _, val_loader = build_dataloaders(config.data)
     dataset = val_loader.dataset
-    model = build_unet(config.model).to(device)
+    model = build_model(config.model).to(device)
     _load_checkpoint(Path(checkpoint_path), model, device)
     model.eval()
 

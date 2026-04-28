@@ -1,0 +1,5 @@
+001 # 0 # 0 # shrub, bush # shrub # ""
+002 # 0 # 0 # mountain ledge # mountain ledge # ""
+003 # 0 # 0 # person, individual, someone, somebody, mortal, soul # person # ""
+004 # 0 # 0 # person, individual, someone, somebody, mortal, soul # person # ""
+005 # 0 # 0 # baby # baby # ""

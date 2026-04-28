@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from unet_ablation.metrics import compute_segmentation_metrics, confusion_matrix
+from unet_ablation.metrics.segmentation import compute_segmentation_metrics, confusion_matrix
 
 
 def test_segmentation_metrics_match_expected_values() -> None:
